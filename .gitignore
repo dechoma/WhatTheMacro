@@ -1,7 +1,9 @@
 *.log
 *.db
-backend/.env
-backend/venv
-backend/__pycache__
+*.pyc
+
+.env
+venv
+__pycache__
 
 frontend/node_modules
