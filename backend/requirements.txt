@@ -6,3 +6,6 @@ openai
 aiofiles
 python-dotenv
 requests
+bcrypt
+PyJWT
+email-validator

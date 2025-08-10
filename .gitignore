@@ -1,7 +1,7 @@
 *.log
 *.db
 *.pyc
-
+.idea
 .env
 venv
 __pycache__

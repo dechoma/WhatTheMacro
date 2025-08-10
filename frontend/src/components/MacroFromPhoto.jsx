@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { API_URL } from "../config";
 import MacroEditor from "./MacroEditor";
 
-export default function MacroFromPhoto({ date, onAdd }) {
+export default function MacroFromPhoto({ date, onAdd, token }) {
   const [selectedFile, setSelectedFile] = useState(null);
   const [macroResult, setMacroResult] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -27,6 +27,7 @@ export default function MacroFromPhoto({ date, onAdd }) {
     try {
       const res = await fetch(`${API_URL}/estimate-macro`, {
         method: "POST",
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
         body: formData,
       });
       if (!res.ok) throw new Error("Failed to analyze image");
@@ -55,16 +56,18 @@ export default function MacroFromPhoto({ date, onAdd }) {
     formData.append("amount", macroData.amount);
 
     try {
-      await fetch(`${API_URL}/intake`, {
+      const res = await fetch(`${API_URL}/intake`, {
         method: "POST",
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
         body: formData,
       });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
       setMacroResult(null);
       setSelectedFile(null);
       setShowEditor(false);
       onAdd && onAdd();
-    } catch {
-      setError("Failed to add to intake.");
+    } catch (e) {
+      setError(e?.message?.includes("401") ? "Authorization required. Please log in." : "Failed to add to intake.");
     }
   };
 
