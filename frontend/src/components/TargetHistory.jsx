@@ -1,14 +1,15 @@
 import React, { useEffect, useState } from "react";
 import { API_URL } from "../config";
 
-export default function TargetHistory() {
+export default function TargetHistory({ token }) {
   const [history, setHistory] = useState([]);
 
   useEffect(() => {
-    fetch(`${API_URL}/targets/history`)
+    if (!token) return;
+    fetch(`${API_URL}/targets/history`, { headers: token ? { Authorization: `Bearer ${token}` } : {} })
       .then(res => res.json())
       .then(setHistory);
-  }, []);
+  }, [token]);
 
   if (!history.length) return null;
 

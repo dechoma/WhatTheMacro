@@ -2,13 +2,15 @@ const COLORS = {
   "Proteins": "#0088FE",
   "Carbs": "#FFBB28",
   "Fats": "#FF5252",
+  "Kcal": "#22c55e",
 };
 
 export default function MacroChart({ intake, target }) {
   const data = [
-    { name: "Proteins", value: intake.protein, max: target.protein, color: COLORS["Proteins"] },
-    { name: "Carbs", value: intake.carbs, max: target.carbs, color: COLORS["Carbs"] },
-    { name: "Fats", value: intake.fat, max: target.fat, color: COLORS["Fats"] },
+    { name: "Proteins", value: intake.protein, max: target.protein, color: COLORS["Proteins"], unit: "g" },
+    { name: "Carbs", value: intake.carbs, max: target.carbs, color: COLORS["Carbs"], unit: "g" },
+    { name: "Fats", value: intake.fat, max: target.fat, color: COLORS["Fats"], unit: "g" },
+    { name: "Kcal", value: intake.calories, max: target.calories, color: COLORS["Kcal"], unit: "kcal" },
   ];
 
   return (
@@ -20,7 +22,7 @@ export default function MacroChart({ intake, target }) {
           <div key={item.name} className="mb-3 flex flex-col items-center">
             <div className="flex justify-between w-[70%] mb-1">
               <span style={{ color: item.color, fontWeight: 600 }}>{item.name}</span>
-              <span className="text-xs">{item.value || 0} / {item.max}g</span>
+              <span className="text-xs">{item.value || 0} / {item.max}{item.unit}</span>
             </div>
             <div style={{
               background: "#e5e7eb",
@@ -42,7 +44,8 @@ export default function MacroChart({ intake, target }) {
       <div className="text-center mt-2 text-sm">
         Left: {Math.max(target.protein - (intake.protein || 0), 0)}g protein,&nbsp;
         {Math.max(target.carbs - (intake.carbs || 0), 0)}g carb,&nbsp;
-        {Math.max(target.fat - (intake.fat || 0), 0)}g fat
+        {Math.max(target.fat - (intake.fat || 0), 0)}g fat,&nbsp;
+        {Math.max(target.calories - (intake.calories || 0), 0)} kcal
       </div>
     </div>
   );

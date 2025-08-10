@@ -1,2 +1,3 @@
 // src/config.js
-export const API_URL = "http://192.168.0.246:8000/api"; // use your backend's LAN IP
+// Default: relative /api (works in Docker with Nginx proxy)
+export const API_URL = import.meta.env.VITE_API_URL || "/api";

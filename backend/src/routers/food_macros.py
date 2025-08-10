@@ -1,9 +1,10 @@
-from fastapi import APIRouter, UploadFile, File
+from fastapi import APIRouter, UploadFile, File, Depends
 import os, datetime, time, base64, re, json, ast, requests
 from dotenv import load_dotenv
 import openai
 import aiofiles
 from db import get_connection
+from routers.auth import get_current_user
 
 load_dotenv()
 openai.api_key = os.getenv("OPENAI_API_KEY")
@@ -49,7 +50,7 @@ def get_macros_from_openfoodfacts(barcode):
     return None
 
 @router.post("/estimate-macro")
-async def estimate_macro(image: UploadFile = File(...)):
+async def estimate_macro(image: UploadFile = File(...), user=Depends(get_current_user)):
     temp_filename = f"temp_{image.filename}"
     async with aiofiles.open(temp_filename, 'wb') as out_file:
         content = await image.read()
@@ -117,7 +118,7 @@ Use only double quotes for all keys and values. If a barcode is found, set prote
     return macros
 
 @router.get("/openai-logs")
-def get_openai_logs(limit: int = 20):
+def get_openai_logs(limit: int = 20, user=Depends(get_current_user)):
     conn = get_connection()
     cur = conn.cursor()
     rows = cur.execute("SELECT * FROM openai_logs ORDER BY id DESC LIMIT ?", (limit,)).fetchall()

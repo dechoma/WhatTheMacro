@@ -1,6 +1,9 @@
 import sqlite3
+import datetime
+import os
 
-DB_PATH = "app.db"
+BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+DB_PATH = os.getenv("DB_PATH", os.path.join(BASE_DIR, "app.db"))
 
 def get_connection():
     conn = sqlite3.connect(DB_PATH, check_same_thread=False)
@@ -9,6 +12,17 @@ def get_connection():
 def init_db():
     conn = get_connection()
     cur = conn.cursor()
+    # Users
+    cur.execute(
+        """
+        CREATE TABLE IF NOT EXISTS users (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            email TEXT UNIQUE NOT NULL,
+            password_hash TEXT NOT NULL,
+            created_at TEXT NOT NULL
+        )
+        """
+    )
     # Tabela spożycia
     cur.execute("""
     CREATE TABLE IF NOT EXISTS daily_intake (
