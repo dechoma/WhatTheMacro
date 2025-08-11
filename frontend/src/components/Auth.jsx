@@ -4,6 +4,7 @@ import { API_URL } from "../config";
 export default function Auth({ onAuthenticated }) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [adminPassword, setAdminPassword] = useState(import.meta.env.VITE_ADMIN_PASSWORD || "");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -34,14 +35,14 @@ export default function Auth({ onAuthenticated }) {
     try {
       const res = await fetch(`${API_URL}/signup`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", "X-Admin-Password": adminPassword },
         body: JSON.stringify({ email, password }),
       });
       if (!res.ok) throw new Error("Signup failed");
       const data = await res.json();
       onAuthenticated(data.access_token);
     } catch (e) {
-      setError("Could not sign up. Maybe email already used?");
+      setError("Could not sign up. Check admin password and email.");
     }
     setLoading(false);
   };
@@ -63,6 +64,13 @@ export default function Auth({ onAuthenticated }) {
           className="border rounded px-2 py-1"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
+        />
+        <input
+          type="password"
+          placeholder="Admin password (required to sign up)"
+          className="border rounded px-2 py-1"
+          value={adminPassword}
+          onChange={(e) => setAdminPassword(e.target.value)}
         />
         {error && <div className="text-red-600 text-sm">{error}</div>}
         <div className="flex gap-2 mt-2">

@@ -2,6 +2,10 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from routers import intake, targets, food_macros, auth
 from db import init_db
+from dotenv import load_dotenv
+
+# Load environment variables from a local .env if present (dev/local runs)
+load_dotenv()
 
 init_db()
 

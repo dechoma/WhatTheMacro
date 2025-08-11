@@ -1,4 +1,4 @@
-from fastapi import APIRouter, HTTPException, Depends
+from fastapi import APIRouter, HTTPException, Depends, Header, status
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from pydantic import BaseModel, EmailStr
 import sqlite3
@@ -7,6 +7,18 @@ import jwt
 import datetime
 import os
 from db import get_connection
+import os
+
+
+ADMIN_PASSWORD = os.getenv("ADMIN_PASSWORD", "")
+
+
+def require_admin(x_admin_password: str = Header(default="")):
+    if not ADMIN_PASSWORD or x_admin_password != ADMIN_PASSWORD:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Admin password required",
+        )
 
 
 JWT_SECRET = os.getenv("JWT_SECRET", "dev-secret-change-me")
@@ -38,7 +50,7 @@ def get_user_by_email(email: str):
     return {"id": row[0], "email": row[1], "password_hash": row[2]}
 
 
-@router.post("/signup", response_model=TokenResponse)
+@router.post("/signup", response_model=TokenResponse, dependencies=[Depends(require_admin)])
 def signup(body: SignupBody):
     if len(body.password) < 6:
         raise HTTPException(status_code=400, detail="Password too short")

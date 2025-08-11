@@ -1,0 +1,36 @@
+services:
+  backend:
+    build:
+      context: ./backend
+    env_file:
+      - ./backend/.env
+    volumes:
+      - ./backend/app.db:/app/app.db
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: ./frontend
+    restart: unless-stopped
+
+  caddy:
+    image: caddy:2
+    depends_on:
+      - frontend
+      - backend
+    ports:
+      - "80:80"
+      - "443:443"
+    environment:
+      - DOMAIN=${DOMAIN}
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    restart: unless-stopped
+
+volumes:
+  caddy_data: {}
+  caddy_config: {}
+
+

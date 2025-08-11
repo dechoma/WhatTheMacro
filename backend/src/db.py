@@ -53,6 +53,14 @@ def init_db():
         response TEXT,
         response_time_ms INTEGER
     )""")
+    # Users for auth
+    cur.execute("""
+    CREATE TABLE IF NOT EXISTS users (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        email TEXT UNIQUE,
+        password_hash TEXT,
+        created_at TEXT
+    )""")
     # Pierwszy rekord domyślnych celów (jeśli brak historii)
     res = cur.execute("SELECT COUNT(*) FROM user_targets_history").fetchone()
     if res and res[0] == 0:

@@ -10,6 +10,8 @@ def test_db_env(tmp_path_factory):
     db_dir = tmp_path_factory.mktemp("db")
     db_path = str(db_dir / "test.db")
     os.environ["DB_PATH"] = db_path
+    # Ensure admin password exists for guarded signup
+    os.environ.setdefault("ADMIN_PASSWORD", "test-admin")
     yield db_path
 
 
@@ -22,7 +24,11 @@ def client(test_db_env):
 
 
 def _signup_or_login(client: TestClient, email: str, password: str) -> str:
-    r = client.post("/api/signup", json={"email": email, "password": password})
+    r = client.post(
+        "/api/signup",
+        json={"email": email, "password": password},
+        headers={"X-Admin-Password": os.getenv("ADMIN_PASSWORD", "test-admin")},
+    )
     if r.status_code == 200:
         return r.json()["access_token"]
     # fallback to login

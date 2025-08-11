@@ -5,7 +5,11 @@ def test_signup_and_login(client: TestClient):
     email = "auth_tester@example.com"
     password = "secret123"
 
-    r = client.post("/api/signup", json={"email": email, "password": password})
+    r = client.post(
+        "/api/signup",
+        json={"email": email, "password": password},
+        headers={"X-Admin-Password": "test-admin"},
+    )
     if r.status_code == 200:
         token = r.json().get("access_token")
         assert token

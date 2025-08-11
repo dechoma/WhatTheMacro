@@ -17,9 +17,14 @@ WORKDIR /app
 COPY --from=builder /install /usr/local
 
 COPY src ./src
-COPY .env .env
 
 ENV PYTHONPATH=/app/src
+
+# Create and use an unprivileged user; do not bake secrets into the image
+RUN useradd -m -u 10001 appuser && \
+    chown -R appuser:appuser /app
+
+USER appuser
 
 EXPOSE 8000
 
