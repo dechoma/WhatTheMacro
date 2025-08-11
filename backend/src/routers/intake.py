@@ -1,10 +1,11 @@
-from fastapi import APIRouter, Form
+from fastapi import APIRouter, Form, Depends
 from db import get_connection
+from routers.auth import get_current_user
 
 router = APIRouter()
 
 @router.get("/intake/{date}")
-def get_intake(date: str):
+def get_intake(date: str, user=Depends(get_current_user)):
     conn = get_connection()
     cur = conn.cursor()
     rows = cur.execute("SELECT * FROM daily_intake WHERE date=?", (date,)).fetchall()
@@ -29,7 +30,8 @@ async def add_intake(
     carbs: float = Form(...),
     fat: float = Form(...),
     calories: float = Form(...),
-    description: str = Form("")
+    description: str = Form(""),
+    user=Depends(get_current_user)
 ):
     conn = get_connection()
     cur = conn.cursor()
@@ -42,7 +44,7 @@ async def add_intake(
     return {"success": True}
 
 @router.delete("/intake/{entry_id}")
-def delete_intake(entry_id: int):
+def delete_intake(entry_id: int, user=Depends(get_current_user)):
     conn = get_connection()
     cur = conn.cursor()
     cur.execute("DELETE FROM daily_intake WHERE id=?", (entry_id,))

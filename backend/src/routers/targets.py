@@ -1,7 +1,8 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends
 from pydantic import BaseModel
 import datetime
 from db import get_connection
+from routers.auth import get_current_user
 
 router = APIRouter()
 
@@ -12,11 +13,11 @@ class Targets(BaseModel):
     calories: float
 
 @router.get("/targets")
-def get_targets():
+def get_targets(user=Depends(get_current_user)):
     conn = get_connection()
     cur = conn.cursor()
     row = cur.execute(
-        "SELECT protein, carbs, fat, calories FROM user_targets_history ORDER BY ts DESC LIMIT 1"
+        "SELECT protein, carbs, fat, calories FROM user_targets_history ORDER BY id DESC LIMIT 1"
     ).fetchone()
     conn.close()
     if row:
@@ -24,7 +25,7 @@ def get_targets():
     return {"protein": 120, "carbs": 195, "fat": 60, "calories": 1800}
 
 @router.post("/targets")
-def update_targets(targets: Targets):
+def update_targets(targets: Targets, user=Depends(get_current_user)):
     conn = get_connection()
     cur = conn.cursor()
     cur.execute(
@@ -36,11 +37,11 @@ def update_targets(targets: Targets):
     return {"success": True}
 
 @router.get("/targets/history")
-def get_targets_history():
+def get_targets_history(user=Depends(get_current_user)):
     conn = get_connection()
     cur = conn.cursor()
     rows = cur.execute(
-        "SELECT ts, protein, carbs, fat, calories FROM user_targets_history ORDER BY ts DESC"
+        "SELECT ts, protein, carbs, fat, calories FROM user_targets_history ORDER BY id DESC"
     ).fetchall()
     conn.close()
     return [
