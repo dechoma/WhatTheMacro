@@ -4,8 +4,10 @@ services:
       context: ./backend
     env_file:
       - ./backend/.env
+    environment:
+      - DB_PATH=/app/data/app.db
     volumes:
-      - ./backend/app.db:/app/app.db
+      - ./backend/data:/app/data
     restart: unless-stopped
 
   frontend:

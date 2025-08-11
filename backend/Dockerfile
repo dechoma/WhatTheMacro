@@ -24,6 +24,8 @@ ENV PYTHONPATH=/app/src
 RUN useradd -m -u 10001 appuser && \
     chown -R appuser:appuser /app
 
+RUN mkdir -p /app/data && chown -R appuser:appuser /app
+
 USER appuser
 
 EXPOSE 8000

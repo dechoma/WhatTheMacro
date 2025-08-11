@@ -20,6 +20,12 @@ def client(test_db_env):
     # Import after setting DB_PATH so init_db() uses the temp DB
     import main
     importlib.reload(main)
+    # Reset in-memory rate limiters for a clean slate per test session
+    try:
+        from rate_limit import reset_all_limiters
+        reset_all_limiters()
+    except Exception:
+        pass
     return TestClient(main.app)
 
 

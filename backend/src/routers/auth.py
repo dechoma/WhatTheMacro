@@ -1,4 +1,5 @@
 from fastapi import APIRouter, HTTPException, Depends, Header, status
+from rate_limit import make_ip_rate_limiter, make_global_rate_limiter
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from pydantic import BaseModel, EmailStr
 import sqlite3
@@ -28,6 +29,9 @@ ACCESS_TOKEN_EXPIRE_MINUTES = 60 * 24 * 14  # 14 days
 
 router = APIRouter()
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/login")
+rate_limit_login = make_ip_rate_limiter(max_requests=10, window_seconds=60)
+rate_limit_signup = make_ip_rate_limiter(max_requests=5, window_seconds=60)
+rate_limit_global_auth = make_global_rate_limiter(max_requests=30, window_seconds=60)
 
 
 class SignupBody(BaseModel):
@@ -50,7 +54,11 @@ def get_user_by_email(email: str):
     return {"id": row[0], "email": row[1], "password_hash": row[2]}
 
 
-@router.post("/signup", response_model=TokenResponse, dependencies=[Depends(require_admin)])
+@router.post(
+    "/signup",
+    response_model=TokenResponse,
+    dependencies=[Depends(rate_limit_global_auth), Depends(rate_limit_signup), Depends(require_admin)],
+)
 def signup(body: SignupBody):
     if len(body.password) < 6:
         raise HTTPException(status_code=400, detail="Password too short")
@@ -89,7 +97,11 @@ def _issue_token_for_email(email: str) -> TokenResponse:
     return TokenResponse(access_token=token)
 
 
-@router.post("/login", response_model=TokenResponse)
+@router.post(
+    "/login",
+    response_model=TokenResponse,
+    dependencies=[Depends(rate_limit_global_auth), Depends(rate_limit_login)],
+)
 def login(form_data: OAuth2PasswordRequestForm = Depends()):
     user = get_user_by_email(form_data.username)
     if not user:
