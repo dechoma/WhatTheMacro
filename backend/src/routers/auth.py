@@ -1,5 +1,6 @@
 from fastapi import APIRouter, HTTPException, Depends, Header, status
 from rate_limit import make_ip_rate_limiter, make_global_rate_limiter
+import os
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from pydantic import BaseModel, EmailStr
 import sqlite3
@@ -29,9 +30,23 @@ ACCESS_TOKEN_EXPIRE_MINUTES = 60 * 24 * 14  # 14 days
 
 router = APIRouter()
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/login")
-rate_limit_login = make_ip_rate_limiter(max_requests=10, window_seconds=60)
-rate_limit_signup = make_ip_rate_limiter(max_requests=5, window_seconds=60)
-rate_limit_global_auth = make_global_rate_limiter(max_requests=30, window_seconds=60)
+
+# Configurable rate limits via environment variables (with safe defaults)
+# Naming does not presume a 60s window; counts are per configured window.
+_RATE_WINDOW_SECONDS = int(os.getenv("AUTH_RATE_WINDOW_SECONDS", "60"))
+_AUTH_GLOBAL_MAX_REQUESTS = int(os.getenv("AUTH_GLOBAL_MAX_REQUESTS", "30"))
+_AUTH_LOGIN_PER_IP_MAX_REQUESTS = int(os.getenv("AUTH_LOGIN_PER_IP_MAX_REQUESTS", "10"))
+_AUTH_SIGNUP_PER_IP_MAX_REQUESTS = int(os.getenv("AUTH_SIGNUP_PER_IP_MAX_REQUESTS", "5"))
+
+rate_limit_login = make_ip_rate_limiter(
+    max_requests=_AUTH_LOGIN_PER_IP_MAX_REQUESTS, window_seconds=_RATE_WINDOW_SECONDS
+)
+rate_limit_signup = make_ip_rate_limiter(
+    max_requests=_AUTH_SIGNUP_PER_IP_MAX_REQUESTS, window_seconds=_RATE_WINDOW_SECONDS
+)
+rate_limit_global_auth = make_global_rate_limiter(
+    max_requests=_AUTH_GLOBAL_MAX_REQUESTS, window_seconds=_RATE_WINDOW_SECONDS
+)
 
 
 class SignupBody(BaseModel):

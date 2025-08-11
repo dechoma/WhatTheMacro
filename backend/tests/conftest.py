@@ -12,6 +12,12 @@ def test_db_env(tmp_path_factory):
     os.environ["DB_PATH"] = db_path
     # Ensure admin password exists for guarded signup
     os.environ.setdefault("ADMIN_PASSWORD", "test-admin")
+    # Configure rate limits for tests (set before app import)
+    # Use small limits so tests complete quickly
+    os.environ.setdefault("AUTH_RATE_WINDOW_SECONDS", "10")
+    os.environ.setdefault("AUTH_GLOBAL_MAX_REQUESTS", "6")  # 1 signup + 5 logins ok, 7th blocked
+    os.environ.setdefault("AUTH_LOGIN_PER_IP_MAX_REQUESTS", "100")
+    os.environ.setdefault("AUTH_SIGNUP_PER_IP_MAX_REQUESTS", "100")
     yield db_path
 
 
